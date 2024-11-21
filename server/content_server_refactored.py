@@ -84,6 +84,7 @@ class ContentServer:
             "SUDO": self.attempt_promotion,
             "WHTL": self.attempt_whitelist_addition,
             "UPGD": self.send_upgrade,
+            "PROF": self.serve_user_profile,
             "": self.nop
         }
 
@@ -188,6 +189,9 @@ class ContentServer:
     
     def unknown_command(self, message: str, client: socket.socket):
         self.logger.info(f"Unknown command in {message}.")
+    
+    def serve_user_profile(self, message: str, client: socket.socket):
+        pass
     
 if __name__ == "__main__":
     server = ContentServer("127.0.0.1", 6071)
