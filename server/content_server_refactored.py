@@ -3,10 +3,11 @@ import threading
 import os
 import logging
 import json
-from sys import stdout
-from time import sleep
+from time import sleep, strftime
+from db_access import DatabaseConnection
 
-
+logfile = open(f"server/logs/{strftime('%Y%m%d-%H%M%S')}.txt", "w")
+logging.basicConfig(level=logging.DEBUG, stream=logfile)
 
 class ContentServer:
     def __init__(self, host, port, main_server_ip, main_server_port, logfile, database):
@@ -195,5 +196,6 @@ class ContentServer:
         pass
     
 if __name__ == "__main__":
-    server = ContentServer("127.0.0.1", 6071)
+    ip = socket.gethostbyname(socket.gethostname())
+    server = ContentServer(ip, 6071, "node1.kranem.hu", 6081, logfile, DatabaseConnection())
     server.start()
