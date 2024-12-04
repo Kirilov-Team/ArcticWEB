@@ -3,12 +3,14 @@ import threading
 import os
 import logging
 from sys import stdout
+from db_access import DatabaseConnection
 
 
 class MainServer:
-    def __init__(self, host, port, logfile):
+    def __init__(self, host, port, logfile, database: DatabaseConnection):
         self.host = host
         self.port = port
+        self.database = database
         logging.basicConfig(stream=logfile, encoding='utf-8', level=logging.DEBUG)
         self.logger = logging.getLogger("MainServer")
         #self.logger.info("""
@@ -36,21 +38,21 @@ class MainServer:
         if is_server:
             servername = client_socket.recv(1024).decode().strip()
             self.logger.info(f"Got server connection from {servername}!")
-            saved_servers = os.listdir("server/servers/server_configs")
-            if servername not in saved_servers:
-                with open("server/servers/server_configs/" + servername, "w") as serverfile:
-                    serverfile.write(str(client_address[0]))
+            saved_servers = self.database.query("SELECT servername,server_ip FROM connected_servers")
+            servernames = [server[0] for server in saved_servers]
+            if servername not in servernames:
+                self.database.query(f"INSERT INTO connected_servers (servername, server_ip) VALUES ('{servername}', '{client_address[0]}')")
         else:
             # send back list of available servers
-            servers = os.listdir("server/servers/server_configs")
-            serverlist_message = "\n".join(servers)
+            servers = self.database.query("SELECT servername FROM connected_servers")
+            servernames = [server[0] for server in servers]
+            serverlist_message = "\n".join(servernames)
             client_socket.send(serverlist_message.encode())
             # receive server selection
             selected_server = client_socket.recv(1024).decode()
             # connect to selected server
-            with open(f"server/servers/server_configs/{selected_server}", "r") as server_config:
-                server_address = server_config.read()
-                client_socket.send(server_address.encode())
+            ip = self.database.query(f"SELECT server_ip FROM connected_servers WHERE servername='{selected_server}'")[0]
+            client_socket.send(ip.encode())
             # My work here is done
             client_socket.close()
 

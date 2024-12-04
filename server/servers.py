@@ -1,6 +1,7 @@
 import threading, logging
 from time import sleep, strftime
 import socket
+from db_access import DatabaseConnection
 
 from main_server_refactored import MainServer
 from content_server_refactored import ContentServer
@@ -13,8 +14,9 @@ ip = socket.gethostbyname(socket.gethostname())
 
 class ArcticServer:
     def __init__(self):
-        self.main_server = MainServer(ip, 6081, logfile)
-        self.content_server = ContentServer(ip, 6071, ip, 6081, logfile)
+        self.db = DatabaseConnection()
+        self.main_server = MainServer(ip, 6081, logfile, self.db)
+        self.content_server = ContentServer(ip, 6071, ip, 6081, logfile, self.db)
         self.logger = logging.getLogger("ArcticServer")
         self.logger.info("Starting Arctic Server...")
         self.main_server_thread = threading.Thread(target=self.main_server.start)

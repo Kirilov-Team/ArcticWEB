@@ -9,10 +9,11 @@ from time import sleep
 
 
 class ContentServer:
-    def __init__(self, host, port, main_server_ip, main_server_port, logfile):
+    def __init__(self, host, port, main_server_ip, main_server_port, logfile, database):
 
         self.host = host
         self.port = port
+        self.database = database  # Placeholder for database connection
         logging.basicConfig(stream=logfile, encoding='utf-8', level=logging.DEBUG)
         self.logger = logging.getLogger("ContentServer")
         self.logger.info(f"Starting content server on {host}:{port}")
